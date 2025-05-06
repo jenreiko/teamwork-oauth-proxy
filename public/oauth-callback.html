@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OAuth Callback</title>
+    <meta charset="UTF-8" />
+    <style>
+      body { font-family: sans-serif; padding: 2em; }
+      .success { color: green; }
+      .error { color: red; }
+    </style>
+  </head>
+  <body>
+    <h2>Finalizing authorization…</h2>
+    <p id="status">Processing…</p>
+    <script>
+      async function exchangeCode() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        const redirect_uri = window.location.origin + "/oauth-callback.html";
+
+        if (!code) {
+          document.getElementById("status").innerText = "Missing authorization code.";
+          return;
+        }
+
+        try {
+          const res = await fetch("/api/teamwork-oauth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code, redirect_uri })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            document.getElementById("status").innerHTML =
+              `<span class="error">Error: ${data.error || "Unknown error"}</span><br>${JSON.stringify(data.detail || {})}`;
+            return;
+          }
+
+          document.getElementById("status").innerHTML =
+            `<span class="success">✅ Authorization successful!</span><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (err) {
+          document.getElementById("status").innerHTML =
+            `<span class="error">Error during token exchange: ${err.message}</span>`;
+        }
+      }
+
+      exchangeCode();
+    </script>
+  </body>
+</html>
