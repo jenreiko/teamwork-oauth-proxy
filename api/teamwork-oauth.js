@@ -3,14 +3,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  const { code, redirect_uri } = req.body;
+  const { code } = req.body;
 
-  if (!code || !redirect_uri) {
-    return res.status(400).json({ error: "Missing required parameters" });
+  if (!code) {
+    return res.status(400).json({ error: "Missing required parameter: code" });
   }
 
   const client_id = process.env.TEAMWORK_CLIENT_ID;
   const client_secret = process.env.TEAMWORK_CLIENT_SECRET;
+  const redirect_uri = "https://teamwork-oauth-proxy.vercel.app/oauth-callback.html";
 
   const tokenUrl = "https://www.teamwork.com/launchpad/v1/token.json";
 
